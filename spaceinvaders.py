@@ -19,7 +19,8 @@ ship2 = pygame.image.load("space invaders/images/player2.png")
 redship = pygame.transform.rotate(pygame.transform.scale(ship1, (60, 40)), 90)
 yellowship = pygame.transform.rotate(pygame.transform.scale(ship2, (60, 40)), 270)
 
-def drawwindow(red, yellow, redbullet, yellowbullet):
+def drawwindow(red, yellow, redbullet, yellowbullet, player1health, player2health):
+    #global player1health, player2health
     screen.blit(bg, (0, 0))
     screen.blit(redship, (red.x, red.y))
     screen.blit(yellowship, (yellow.x, yellow.y))
@@ -28,12 +29,25 @@ def drawwindow(red, yellow, redbullet, yellowbullet):
     for i in yellowbullet:
         pygame.draw.rect(screen, "yellow", i)
     font1 = pygame.font.SysFont("Ariel", 20)
-    text1 = font1.render("player1 health = ", player1health, True, "white")
+    text1 = font1.render("player1 health = " + str(player1health), True, "white")
     screen.blit(text1, (20, 20))
-    text2 = font1.render("player2 health = ", player2health, True, "white")
-    screen.blit(text2, (980, 20))
+    text2 = font1.render("player2 health = " + str(player2health), True, "white")
+    screen.blit(text2, (860, 20))
     pygame.display.update()
-
+    if player1health == 0:
+            screen.fill("yellow")
+            wintext1 = font1.render("yellow has won!!!", True, "black")
+            screen.blit(wintext1, (500, 250))
+            pygame.display.update()
+            time.sleep(20)
+            quit()
+    if player2health == 0:
+            screen.fill("red")
+            wintext2 = font1.render("red has won!!!", True, "black")
+            screen.blit(wintext2, (500, 250))
+            pygame.display.update()
+            time.sleep(20)
+            quit()
 def redshipmovement(keypress, red):
     if keypress[pygame.K_a]:
         red.x -= velocity
@@ -55,9 +69,11 @@ def yellowshipmovement(keypress, yellow):
         yellow.y -= velocity
 
 def handlebullets(yellowbullet, redbullet, yellow, red):
+    global player1health, player2health
     for i in yellowbullet:
         i.x -= bulletvelocity
         if red.colliderect(i):
+            yellowbullet.remove(i)
             pygame.event.post(pygame.event.Event(redhit))
             pygame.display.update()
             time.sleep(0.01)
@@ -65,6 +81,7 @@ def handlebullets(yellowbullet, redbullet, yellow, red):
     for i in redbullet:
         i.x += bulletvelocity
         if yellow.colliderect(i):
+            redbullet.remove(i)
             pygame.event.post(pygame.event.Event(yellowhit))
             pygame.display.update()
             time.sleep(0.01)
@@ -74,6 +91,7 @@ def handlebullets(yellowbullet, redbullet, yellow, red):
     time.sleep(0.01)
 
 def main():
+    global player1health, player2health
     red = pygame.Rect(250, 250, 60, 40)
     yellow = pygame.Rect(750, 250, 60, 40)
     run = True
@@ -82,8 +100,10 @@ def main():
     while run:
         if red.x > 500:
             player1health -= 1
+            red.x = 250
         if yellow.x < 500:
             player2health -= 1
+            yellow.x = 750
         for i in pygame.event.get():
             if i.type == pygame.QUIT:
                run = False
@@ -98,7 +118,7 @@ def main():
         yellowshipmovement(keypress, yellow)
         redshipmovement(keypress, red)
         handlebullets(yellowbullet, redbullet, yellow, red)
-        drawwindow(red, yellow, redbullet, yellowbullet)
+        drawwindow(red, yellow, redbullet, yellowbullet, player1health, player2health)
         pygame.display.update()
 
 main()
